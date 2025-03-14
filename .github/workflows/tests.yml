@@ -12,19 +12,20 @@ jobs:
     
     services:
       elasticsearch:
-        image: elasticsearch:8.12.0
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
         env:
           discovery.type: single-node
           xpack.security.enabled: false
         ports:
           - 9200:9200
         options: >-
-          --health-cmd="curl -s http://localhost:9200/_cluster/health"
+          --health-cmd="curl -s --insecure http://localhost:9200/_cluster/health"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
 
     strategy:
+      fail-fast: false
       matrix:
         php-versions: ['8.0', '8.1', '8.2']
 
@@ -35,7 +36,7 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php-versions }}
-        extensions: mbstring, intl
+        extensions: mbstring, intl, curl
         coverage: xdebug
 
     - name: Validate composer.json and composer.lock
@@ -53,18 +54,23 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
+    - name: Check Elasticsearch
+      run: |
+        echo "Checking Elasticsearch..."
+        curl -s --insecure http://localhost:9200
+
     - name: Wait for Elasticsearch
       run: |
         echo "Waiting for Elasticsearch to be ready..."
-        until curl -s http://localhost:9200/_cluster/health | grep -q '"status":"green"'; do
-          sleep 1
+        for i in {1..30}; do
+          if curl -s --insecure http://localhost:9200/_cluster/health | grep -q '"status":"green\|yellow"'; then
+            echo "Elasticsearch is ready!"
+            break
+          fi
+          echo "Waiting... ($i/30)"
+          sleep 2
         done
-        echo "Elasticsearch is ready!"
+        curl -s --insecure http://localhost:9200/_cluster/health
 
     - name: Run test suite
-      run: vendor/bin/pest --coverage
-      
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage/clover.xml
+      run: vendor/bin/pest

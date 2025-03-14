@@ -22,10 +22,10 @@
     ],
     "require": {
         "php": ">=8.0",
-        "elasticsearch/elasticsearch": "^8.17"
+        "elasticsearch/elasticsearch": "^8.0"
     },
     "require-dev": {
-        "pestphp/pest": "^3.7"
+        "pestphp/pest": "^2.0"
     },
     "config": {
         "allow-plugins": {
