@@ -1,0 +1,26 @@
+{
+    "name": "oscarweijman/php-elastic",
+    "autoload": {
+        "psr-4": {
+            "OscarWeijman\\PhpElastic\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Oscar Weijman",
+            "email": "opweijman@yahoo.com"
+        }
+    ],
+    "require": {
+        "elasticsearch/elasticsearch": "^8.17"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true,
+            "pestphp/pest-plugin": true
+        }
+    },
+    "require-dev": {
+        "pestphp/pest": "^3.7"
+    }
+}
