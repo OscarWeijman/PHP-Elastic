@@ -1,8 +1,17 @@
 {
     "name": "oscarweijman/php-elastic",
+    "description": "Een moderne PHP library voor het werken met Elasticsearch, met focus op eenvoud en type safety",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["elasticsearch", "php", "search", "index", "document"],
     "autoload": {
         "psr-4": {
             "OscarWeijman\\PhpElastic\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "OscarWeijman\\PhpElastic\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -12,15 +21,19 @@
         }
     ],
     "require": {
+        "php": ">=8.0",
         "elasticsearch/elasticsearch": "^8.17"
+    },
+    "require-dev": {
+        "pestphp/pest": "^3.7"
     },
     "config": {
         "allow-plugins": {
             "php-http/discovery": true,
             "pestphp/pest-plugin": true
-        }
+        },
+        "sort-packages": true
     },
-    "require-dev": {
-        "pestphp/pest": "^3.7"
-    }
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }
