@@ -8,7 +8,7 @@ Een moderne PHP library voor het werken met Elasticsearch, met focus op eenvoud 
 
 ## Features
 
-- 🚀 Moderne PHP 8.x syntax
+- 🚀 Moderne PHP 8.2+ syntax
 - 🔍 Fluent interface voor zoeken
 - 📦 Eenvoudig document management
 - 🎯 Index beheer
