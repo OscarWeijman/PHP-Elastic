@@ -2,6 +2,10 @@
 
 Een moderne PHP library voor het werken met Elasticsearch, met focus op eenvoud en type safety.
 
+[![Tests](https://github.com/oscarweijman/php-elastic/actions/workflows/tests.yml/badge.svg)](https://github.com/oscarweijman/php-elastic/actions/workflows/tests.yml)
+[![Latest Stable Version](https://poser.pugx.org/oscarweijman/php-elastic/v/stable)](https://packagist.org/packages/oscarweijman/php-elastic)
+[![License](https://poser.pugx.org/oscarweijman/php-elastic/license)](https://packagist.org/packages/oscarweijman/php-elastic)
+
 ## Features
 
 - 🚀 Moderne PHP 8.x syntax
