@@ -24,16 +24,33 @@ class IndexManager
     /**
      * Create an index
      */
-    public function create(string $index, array $settings = [], array $mappings = []): array
+    public function create(string $index, array $settings = [], array $mappings = []): bool
     {
-        return $this->client->createIndex($index, $settings, $mappings);
+        $result = $this->client->createIndex($index, $settings, $mappings);
+        return isset($result['acknowledged']) && $result['acknowledged'] === true;
     }
 
     /**
      * Delete an index
      */
-    public function delete(string $index): array
+    public function delete(string $index): bool
     {
-        return $this->client->deleteIndex($index);
+        $result = $this->client->deleteIndex($index);
+        return isset($result['acknowledged']) && $result['acknowledged'] === true;
+    }
+    
+    /**
+     * Get index settings
+     */
+    public function getSettings(string $index): array
+    {
+        try {
+            $response = $this->client->getClient()->indices()->getSettings([
+                'index' => $index
+            ]);
+            return $response->asArray();
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Failed to get settings for index '{$index}': " . $e->getMessage(), 0, $e);
+        }
     }
 }
