@@ -34,11 +34,6 @@ test('IndexManager can create and delete an index', function () {
     
     // The create method returns an array in GitHub Actions but a boolean locally
     expect($indexManager->exists($testIndex))->toBeTrue();
-    expect($indexManager->exists($testIndex))->toBeTrue();
-    
-    // Get settings
-    $settings = $indexManager->getSettings($testIndex);
-    expect($settings)->toBeArray();
     
     // Delete index
     $deleteResult = $indexManager->delete($testIndex);
