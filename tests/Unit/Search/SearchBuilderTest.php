@@ -202,7 +202,7 @@ test('SearchBuilder can build and return raw query', function () {
         ->size(5)
         ->sort(['rating' => 'desc']);
 
-    $query = $this->searchBuilder->getQuery();
+    $query = $this->searchBuilder->buildQuery();
 
     expect($query)->toBeArray()
         ->and($query)->toHaveKey('from')

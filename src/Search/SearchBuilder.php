@@ -108,18 +108,29 @@ class SearchBuilder
     }
 
     /**
+     * Build the final query and return the body
+     * 
+     * @return array
+     */
+    public function buildQuery(): array
+    {
+        $this->buildQueryInternal();
+        return $this->params['body'] ?? [];
+    }
+
+    /**
      * Execute the search
      */
     public function execute(): array
     {
-        $this->buildQuery();
+        $this->buildQueryInternal();
         return $this->client->search($this->params);
     }
 
     /**
      * Build the final query
      */
-    private function buildQuery(): void
+    private function buildQueryInternal(): void
     {
         $body = [];
 
