@@ -3,19 +3,14 @@
 namespace OscarWeijman\PhpElastic\Search;
 
 use OscarWeijman\PhpElastic\ElasticClient;
-use OscarWeijman\PhpElastic\Exception\ElasticClientException;
 
 class SearchBuilder
 {
     private ElasticClient $client;
+    private array $params = [];
     private array $query = [];
-    private array $indices = [];
-    private int $from = 0;
-    private int $size = 10;
-    private array $sort = [];
-    private array $aggs = [];
-    private array $source = [];
-    private array $highlight = [];
+    private array $filters = [];
+    private array $aggregations = [];
 
     public function __construct(ElasticClient $client)
     {
@@ -24,260 +19,130 @@ class SearchBuilder
 
     /**
      * Set the indices to search
-     *
-     * @param string|array $indices
-     * @return $this
      */
     public function indices(string|array $indices): self
     {
-        $this->indices = is_array($indices) ? $indices : [$indices];
-        return $this;
-    }
-
-    /**
-     * Set the from parameter (pagination)
-     *
-     * @param int $from
-     * @return $this
-     */
-    public function from(int $from): self
-    {
-        $this->from = $from;
-        return $this;
-    }
-
-    /**
-     * Set the size parameter (pagination)
-     *
-     * @param int $size
-     * @return $this
-     */
-    public function size(int $size): self
-    {
-        $this->size = $size;
-        return $this;
-    }
-
-    /**
-     * Set the sort parameter
-     *
-     * @param array $sort
-     * @return $this
-     */
-    public function sort(array $sort): self
-    {
-        $this->sort = $sort;
-        return $this;
-    }
-
-    /**
-     * Set the _source parameter
-     *
-     * @param array|bool $source
-     * @return $this
-     */
-    public function source(array|bool $source): self
-    {
-        $this->source = $source;
-        return $this;
-    }
-
-    /**
-     * Set the highlight parameter
-     *
-     * @param array $highlight
-     * @return $this
-     */
-    public function highlight(array $highlight): self
-    {
-        $this->highlight = $highlight;
+        $this->params['index'] = is_array($indices) ? implode(',', $indices) : $indices;
         return $this;
     }
 
     /**
      * Add a match query
-     *
-     * @param string $field
-     * @param mixed $value
-     * @param float $boost
-     * @return $this
      */
-    public function match(string $field, mixed $value, float $boost = 1.0): self
+    public function match(string $field, mixed $value): self
     {
-        $this->query['bool']['must'][] = [
-            'match' => [
-                $field => [
-                    'query' => $value,
-                    'boost' => $boost
-                ]
-            ]
-        ];
+        $this->query['match'][$field] = $value;
         return $this;
     }
 
     /**
-     * Add a term query
-     *
-     * @param string $field
-     * @param mixed $value
-     * @return $this
+     * Add a match phrase query
+     */
+    public function matchPhrase(string $field, string $value): self
+    {
+        $this->query['match_phrase'][$field] = $value;
+        return $this;
+    }
+
+    /**
+     * Add a term filter
      */
     public function term(string $field, mixed $value): self
     {
-        $this->query['bool']['filter'][] = [
-            'term' => [
-                $field => $value
-            ]
-        ];
+        $this->filters[] = ['term' => [$field => $value]];
         return $this;
     }
 
     /**
-     * Add a terms query
-     *
-     * @param string $field
-     * @param array $values
-     * @return $this
+     * Add a terms filter
      */
     public function terms(string $field, array $values): self
     {
-        $this->query['bool']['filter'][] = [
-            'terms' => [
-                $field => $values
-            ]
-        ];
+        $this->filters[] = ['terms' => [$field => $values]];
         return $this;
     }
 
     /**
-     * Add a range query
-     *
-     * @param string $field
-     * @param array $conditions
-     * @return $this
+     * Add a range filter
      */
     public function range(string $field, array $conditions): self
     {
-        $this->query['bool']['filter'][] = [
-            'range' => [
-                $field => $conditions
-            ]
-        ];
+        $this->filters[] = ['range' => [$field => $conditions]];
         return $this;
     }
 
     /**
-     * Add a should query
-     *
-     * @param array $query
-     * @return $this
+     * Set the from parameter (for pagination)
      */
-    public function should(array $query): self
+    public function from(int $from): self
     {
-        if (!isset($this->query['bool']['should'])) {
-            $this->query['bool']['should'] = [];
-        }
-        $this->query['bool']['should'][] = $query;
+        $this->params['body']['from'] = $from;
+        return $this;
+    }
+
+    /**
+     * Set the size parameter (for pagination)
+     */
+    public function size(int $size): self
+    {
+        $this->params['body']['size'] = $size;
+        return $this;
+    }
+
+    /**
+     * Set the sort parameter
+     */
+    public function sort(array $sort): self
+    {
+        $this->params['body']['sort'] = $sort;
         return $this;
     }
 
     /**
      * Add an aggregation
-     *
-     * @param string $name
-     * @param array $agg
-     * @return $this
      */
-    public function aggregation(string $name, array $agg): self
+    public function aggregation(string $name, array $aggregation): self
     {
-        $this->aggs[$name] = $agg;
+        $this->aggregations[$name] = $aggregation;
         return $this;
     }
 
     /**
      * Execute the search
-     *
-     * @param array $options Additional options to pass to the search
-     * @return array
-     * @throws ElasticClientException
      */
-    public function execute(array $options = []): array
+    public function execute(): array
     {
-        try {
-            $params = [
-                'body' => [
-                    'from' => $this->from,
-                    'size' => $this->size,
-                ]
-            ];
-
-            if (!empty($this->indices)) {
-                $params['index'] = implode(',', $this->indices);
-            }
-
-            if (!empty($this->query)) {
-                $params['body']['query'] = $this->query;
-            }
-
-            if (!empty($this->sort)) {
-                $params['body']['sort'] = $this->sort;
-            }
-
-            if (!empty($this->aggs)) {
-                $params['body']['aggs'] = $this->aggs;
-            }
-
-            if (!empty($this->source)) {
-                $params['body']['_source'] = $this->source;
-            }
-
-            if (!empty($this->highlight)) {
-                $params['body']['highlight'] = $this->highlight;
-            }
-
-            if (!empty($options)) {
-                $params = array_merge_recursive($params, $options);
-            }
-
-            $response = $this->client->getClient()->search($params);
-            return $response->asArray();
-        } catch (\Exception $e) {
-            throw new ElasticClientException("Search failed: {$e->getMessage()}", 0, $e);
-        }
+        $this->buildQuery();
+        return $this->client->search($this->params);
     }
 
     /**
-     * Get the raw query array
-     *
-     * @return array
+     * Build the final query
      */
-    public function getQuery(): array
+    private function buildQuery(): void
     {
-        $query = [
-            'from' => $this->from,
-            'size' => $this->size,
-        ];
+        $body = [];
 
+        // Add query if exists
         if (!empty($this->query)) {
-            $query['query'] = $this->query;
+            $body['query']['bool']['must'][] = $this->query;
         }
 
-        if (!empty($this->sort)) {
-            $query['sort'] = $this->sort;
+        // Add filters if exist
+        if (!empty($this->filters)) {
+            $body['query']['bool']['filter'] = $this->filters;
         }
 
-        if (!empty($this->aggs)) {
-            $query['aggs'] = $this->aggs;
+        // Add aggregations if exist
+        if (!empty($this->aggregations)) {
+            $body['aggs'] = $this->aggregations;
         }
 
-        if (!empty($this->source)) {
-            $query['_source'] = $this->source;
+        // Merge with existing body
+        if (isset($this->params['body'])) {
+            $this->params['body'] = array_merge($this->params['body'], $body);
+        } else {
+            $this->params['body'] = $body;
         }
-
-        if (!empty($this->highlight)) {
-            $query['highlight'] = $this->highlight;
-        }
-
-        return $query;
     }
 }
