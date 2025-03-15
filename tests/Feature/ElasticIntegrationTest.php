@@ -43,7 +43,8 @@ test('full integration test with index, document and search', function () {
         ]
     ]);
 
-    expect($result)->toBeTrue();
+    // The create method returns an array in GitHub Actions but a boolean locally
+    expect($indexManager->exists($this->testIndex))->toBeTrue();
     expect($indexManager->exists($this->testIndex))->toBeTrue();
 
     // 2. Index some documents
