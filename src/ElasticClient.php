@@ -201,6 +201,11 @@ class ElasticClient
                 'id' => $id
             ]);
             return $response->asArray();
+        } catch (ClientResponseException $e) {
+            if ($e->getCode() === 404) {
+                throw new \RuntimeException("Document not found in index '{$index}' with ID '{$id}'", 404, $e);
+            }
+            throw new \RuntimeException("Failed to delete document: " . $e->getMessage(), 0, $e);
         } catch (Exception $e) {
             throw new \RuntimeException("Failed to delete document: " . $e->getMessage(), 0, $e);
         }

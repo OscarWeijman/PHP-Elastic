@@ -112,11 +112,12 @@ test('DocumentManager can delete a document', function () {
 
     // Verify document is gone - we need to catch the exception here
     try {
-        $result = $this->documentManager->get($this->testIndex, 'test-id-3');
-        expect($result)->toBeNull();
-    } catch (\Exception $e) {
-        // If we get a 404 exception, that's also acceptable
-        expect($e->getMessage())->toContain('404');
+        $this->documentManager->get($this->testIndex, 'test-id-3');
+        $this->fail('Expected exception was not thrown');
+    } catch (\RuntimeException $e) {
+        // If we get a 404 exception, that's what we expect
+        expect($e->getMessage())->toContain('Document not found');
+        expect($e->getCode())->toBe(404);
     }
 });
 
