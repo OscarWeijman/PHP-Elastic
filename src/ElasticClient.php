@@ -63,6 +63,19 @@ class ElasticClient
     }
     
     /**
+     * Check if Elasticsearch is available
+     */
+    public function ping(): bool
+    {
+        try {
+            $this->client->info();
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+    
+    /**
      * Check if an index exists
      */
     public function indexExists(string $index): bool

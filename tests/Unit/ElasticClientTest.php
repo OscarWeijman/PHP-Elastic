@@ -16,7 +16,8 @@ test('can connect to elasticsearch', function () {
     ]);
     
     $info = $client->info();
-    expect($info)->toBeArray()
+    expect($info)
+        ->toBeArray()
         ->toHaveKey('version')
         ->toHaveKey('tagline')
         ->and($info['tagline'])->toBe('You Know, for Search');
