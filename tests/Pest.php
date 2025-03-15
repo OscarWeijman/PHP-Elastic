@@ -11,7 +11,9 @@
 |
 */
 
-// uses(Tests\TestCase::class)->in('Feature');
+use OscarWeijman\PhpElastic\Tests\TestCase;
+
+uses(TestCase::class)->in('Unit', 'Feature');
 
 /*
 |--------------------------------------------------------------------------
@@ -39,9 +41,7 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function getTestClient(): \OscarWeijman\PhpElastic\ElasticClient
+function getElasticsearchHost(): string
 {
-    return new \OscarWeijman\PhpElastic\ElasticClient([
-        'hosts' => ['localhost:9200']
-    ]);
+    return $_ENV['ELASTICSEARCH_HOST'] ?? 'localhost:9200';
 }
